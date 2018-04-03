@@ -1,0 +1,7 @@
+Author: Christian Auspland
+Homework 2
+
+The lexaard class is an fsa interpreter that reads Standard Intput and creates 
+an fsa or string based upon the inputs. The interpreter can define new fsa's, 
+print already defined fsa's, run an fsa with a given string input, and lastly
+it can quit out of itself.

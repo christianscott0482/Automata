@@ -1,0 +1,19 @@
+Author: Christian Auspland
+Homework 4
+
+The most recent version of the lexaard code adds functionality to define and print both regular expressions and gnfas. Both follor sytanx described by the homework 4 document.
+
+example of regular expression definition:
+define foo (r* (r. (r| a (r. b b) (r. c (r* c))) a))
+
+example of gnfa definition: 
+define foo gnfa
+This is a description of my gnfa
+a b
+q1 q2 q3 q4
+q1 .. r/ (r. a (r* b)) b
+q2 .. (r. a b) (r* (r. a a)) (r* b)
+q3 .. (r* a) .. (r| (r. a b) (r. b a))
+q4 .. .. .. ..
+
+
