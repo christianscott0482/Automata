@@ -27,6 +27,40 @@ class lexaard
 		type = typename;
 	}
 
+	// New class for rules in a grammar
+	// Class for rules
+	public static class rule{
+		// String containing the variable for this rule
+		public String rule_var;
+
+		// List of possible variables/terminals for this rule
+		public List<String> rule_term = new ArrayList<String>();
+
+		public rule(){}
+	}
+	// New class for grammar formatting
+	public static class grammar{
+		// Name of grammar
+		public String name;
+
+		// Description of grammar
+		public String description;
+
+		// List of terminals
+		public List<String> terminal = new ArrayList<String>();
+
+		// List of variables
+		public List<String> variable = new ArrayList<String>();
+
+		// Array List of Rules
+		public List<rule> rules = new ArrayList<rule>();
+
+		// Constructor for grammar
+		public grammar(String new_name){
+			name = new_name;
+		}
+
+	}
 	public lexaard(String oname, String typename, boolean is_am, boolean is_rgx){
 		name = oname;
 		type = typename;
@@ -48,8 +82,6 @@ class lexaard
 		int new_position = 0;
 		int i,j,k;
 		List<String> states = new ArrayList<String>();
-		List<List<String>> powerset = new ArrayList<List<String>>();
-
 		String temp;
 
 
@@ -57,6 +89,8 @@ class lexaard
 		Scanner scan = new Scanner(System.in);
 		// List of all defined automata
 		List<lexaard> automata = new ArrayList<lexaard>();
+		// List of all defined cfgs
+		List<grammar> cfg = new ArrayList<grammar>();
 
 		String input;
 		String [] inputsplit;
@@ -179,6 +213,83 @@ class lexaard
 							break;
 						case "regex2fsa":
 								
+
+							break;
+
+						case "cfg":
+							// Search if name is already defined
+							found_flag = false;
+
+							for (i = 0; i < cfg.size(); i++){
+								if (Objects.equals(cfg.get(i).name, inputsplit[1])){
+									found_flag = true;
+									def_position = i;
+									break;
+								}
+							}
+							// If the cfg already exists, rename it
+							if (found_flag){
+								cfg.get(def_position).name = inputsplit[1];
+							} 
+							// Otherwise, declare a new cfg
+							else{
+								cfg.add(new grammar(inputsplit[1]));	
+								def_position = cfg.size() - 1;
+							}
+							// Read in next line (description)
+							input = scan.nextLine();
+							cfg.get(def_position).description = input;
+							
+							// From here, three lines are possible. A line defining a rule,
+							// a line defining a set of terminals, and a line defining a set of 
+							// variables. The input will read continuously until two 
+							// newline characters are read.
+
+
+							inputsplit = input.split("\\s+");
+
+							loop_flag = true;
+							int rule_pos = 0;
+							while(loop_flag){
+								input = scan.nextLine();
+								inputsplit = input.split("\\s+");
+
+								//  Checks to see if the input was empty(indicating a second)
+								// newline character was sent
+								if (input.trim().isEmpty()){
+									loop_flag = false;
+								}
+
+								// First check for a rule
+								if(Objects.equals(inputsplit[1], "->")){
+									// It's time for a new rule!
+									cfg.get(def_position).rules.add(new rule());
+									rule_pos = cfg.get(def_position).rules.size() - 1;
+
+									// Save rule variable, and add to list of variables
+									cfg.get(def_position).rules.get(rule_pos).rule_var = inputsplit[0];	
+									cfg.get(def_position).variable.add(inputsplit[0]);
+
+									// Goes through 
+									for (i = 2; i < inputsplit.length; i++){
+										cfg.get(def_position).rules.get(rule_pos).rule_term.add(inputsplit[i]);
+										cfg.get(def_position).terminal.add(inputsplit[i]);
+									}
+								}
+								// Check for list of terminals
+								else if (Objects.equals(inputsplit[0], "..")){
+									for (i = 0; i < inputsplit.length; i++){
+										cfg.get(def_position).terminal.add(inputsplit[i]);
+									}
+								}
+								// The last possible input is a series of variables
+								else {
+									for (i = 0; i < inputsplit.length; i++){
+										cfg.get(def_position).variable.add(inputsplit[i]);
+									}	
+								}
+							
+							}
 
 							break;
 						default:

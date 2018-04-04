@@ -16,4 +16,4 @@ classes:$(CLASSES:.java=.class)
 
 
 clean:
-	$(RM) lexaard.class
+	$(RM) lexaard.class lexaard\$$rule.class lexaard\$$grammar.class
