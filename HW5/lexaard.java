@@ -4,6 +4,7 @@
 
 
 import java.util.*;
+import Collections;
 class lexaard
 {
 	// Name of Object
@@ -35,6 +36,9 @@ class lexaard
 
 		// List of possible variables/terminals for this rule
 		public List<String> rule_term = new ArrayList<String>();
+		// COOL NEW form of rule_term with nested arraylist for maximum confusion
+		public List<List<String>> rule_term = new ArrayList<List<String>>();
+
 
 		public rule(){}
 	}
@@ -108,7 +112,22 @@ class lexaard
 				// Print the automaton described on StdIn
 				case "print":
 					found_flag = false;
+					boolean found_cfg = false;
 
+					// First, search see if the name is a cfg or an automata
+					for (i = 0; i < cfg.size(); i++){
+						if (Objects.equals(cfg.get(i).name, inputsplit[1])){
+							// We have a match!
+							found_cfg = true;
+							print_position = i;
+							break;	
+						}
+					}
+
+					// We found a cfg, so let's print it out
+					if (found_cfg){
+						print_cfg(cfg.get(found_cfg));
+					}
 					// Seach through all automata identifiers, and set
 					// flag whenever one is found.
 					for (i = 0; i < automata.size(); i++){
@@ -519,6 +538,37 @@ class lexaard
 		current_string = s.toCharArray();		
 		
 	}*/
+
+	public static void print_cfg(grammar cfg){
+
+		// temp lists for terminals and variables with no rules
+		List<String> term_temp = new ArrayList<String>();
+		List<String> var_temp = new ArrayList<String>();
+
+
+		System.out.println(cfg.get(print_position).name);
+		System.out.println(cfg.get(print_position).description);
+
+		// Print out the rules, keeping track of what terminals
+		// and variables have been used
+		for (i = 0; i < cfg.get(print_position).rules.size(); i++){
+			// Print and add present rule variable
+			System.out.print(cfg.get(print_position).rules.get(i).rule_var + " ");
+			var_temp.add(cfg.get(print_position).rules.get(i).rule_var);
+			
+			System.out.print("->");
+
+			// Print and add all terminals
+			for(k = 0; k < cfg.get(print_position).rules.get(i).rule_term.size(); i++){
+				if(Objects.equals(cfg.get(print_position.rules.get(i).rule_term.get(k), "|"){
+					// Do nothing
+				} else {
+					
+				}	
+			}
+		}
+	}
+
 	public static void run_automaton(lexaard a, String s){
 		boolean found_path = false;
 		boolean ep_flag = false;
