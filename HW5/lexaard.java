@@ -4,7 +4,6 @@
 
 
 import java.util.*;
-import Collections;
 class lexaard
 {
 	// Name of Object
@@ -35,7 +34,8 @@ class lexaard
 		public String rule_var;
 
 		// List of possible variables/terminals for this rule
-		public List<String> rule_term = new ArrayList<String>();
+		//public List<String> rule_term = new ArrayList<String>();
+
 		// COOL NEW form of rule_term with nested arraylist for maximum confusion
 		public List<List<String>> rule_term = new ArrayList<List<String>>();
 
@@ -126,7 +126,8 @@ class lexaard
 
 					// We found a cfg, so let's print it out
 					if (found_cfg){
-						print_cfg(cfg.get(found_cfg));
+						print_cfg(cfg.get(print_position), print_position);
+						break;
 					}
 					// Seach through all automata identifiers, and set
 					// flag whenever one is found.
@@ -231,7 +232,8 @@ class lexaard
 						case "minDFA":
 							break;
 						case "regex2fsa":
-								
+							break;
+						case "chomskyNF":
 
 							break;
 
@@ -269,6 +271,9 @@ class lexaard
 
 							loop_flag = true;
 							int rule_pos = 0;
+							String [] inputsplit2;
+							String [] inputsplit3;
+
 							while(loop_flag){
 								input = scan.nextLine();
 								inputsplit = input.split("\\s+");
@@ -280,7 +285,8 @@ class lexaard
 								}
 
 								// First check for a rule
-								if(Objects.equals(inputsplit[1], "->")){
+								else if(Objects.equals(inputsplit[1], "->")){
+
 									// It's time for a new rule!
 									cfg.get(def_position).rules.add(new rule());
 									rule_pos = cfg.get(def_position).rules.size() - 1;
@@ -289,15 +295,26 @@ class lexaard
 									cfg.get(def_position).rules.get(rule_pos).rule_var = inputsplit[0];	
 									cfg.get(def_position).variable.add(inputsplit[0]);
 
-									// Goes through 
-									for (i = 2; i < inputsplit.length; i++){
-										cfg.get(def_position).rules.get(rule_pos).rule_term.add(inputsplit[i]);
-										cfg.get(def_position).terminal.add(inputsplit[i]);
+									// Change the split for formatting
+									inputsplit = input.split("->");
+									// split second string (terminals strings)
+									inputsplit2 = inputsplit[1].split("\\|");
+									
+									for (i = 0; i < inputsplit2.length; i++){
+										cfg.get(def_position).rules.get(rule_pos).rule_term.add( new ArrayList<String>());
+										// Split terminal strings into individual 
+										// characters(or strings)
+										inputsplit3 = inputsplit2[i].split("\\s+");
+										for (k = 0; k < inputsplit3.length; k++){
+											// Add terminals
+											cfg.get(def_position).rules.get(rule_pos).rule_term.get(i).add(inputsplit3[k]);
+											cfg.get(def_position).terminal.add(inputsplit3[k]);
+										}
 									}
 								}
 								// Check for list of terminals
 								else if (Objects.equals(inputsplit[0], "..")){
-									for (i = 0; i < inputsplit.length; i++){
+									for (i = 1; i < inputsplit.length; i++){
 										cfg.get(def_position).terminal.add(inputsplit[i]);
 									}
 								}
@@ -538,34 +555,62 @@ class lexaard
 		current_string = s.toCharArray();		
 		
 	}*/
-
-	public static void print_cfg(grammar cfg){
-
+	
+	public static void print_cfg(grammar cfg, int position){
+		
 		// temp lists for terminals and variables with no rules
-		List<String> term_temp = new ArrayList<String>();
-		List<String> var_temp = new ArrayList<String>();
+		List<String> term_temp = new ArrayList<String>(cfg.terminal);
+		List<String> var_temp = new ArrayList<String>(cfg.variable);
+		int i,j,k,p;
 
+		
+		System.out.println("cfg");
+		System.out.print(cfg.name + " ");
+		System.out.println(cfg.description);
 
-		System.out.println(cfg.get(print_position).name);
-		System.out.println(cfg.get(print_position).description);
+		// Start printing rules
+		// iterate through rules
+		for (i = 0; i < cfg.rules.size(); i++){
+			System.out.print(cfg.rules.get(i).rule_var + " ->");
 
-		// Print out the rules, keeping track of what terminals
-		// and variables have been used
-		for (i = 0; i < cfg.get(print_position).rules.size(); i++){
-			// Print and add present rule variable
-			System.out.print(cfg.get(print_position).rules.get(i).rule_var + " ");
-			var_temp.add(cfg.get(print_position).rules.get(i).rule_var);
-			
-			System.out.print("->");
-
-			// Print and add all terminals
-			for(k = 0; k < cfg.get(print_position).rules.get(i).rule_term.size(); i++){
-				if(Objects.equals(cfg.get(print_position.rules.get(i).rule_term.get(k), "|"){
-					// Do nothing
-				} else {
-					
-				}	
+			// remove a variable from var_term if it's used
+			for (j = 0; j < var_temp.size(); j++){
+				if (Objects.equals(var_temp.get(j), cfg.rules.get(i).rule_var)){
+					var_temp.remove(j);
+				}
 			}
+			// iterate through terminal strings
+			for (j = 0; j < cfg.rules.get(i).rule_term.size(); j++){
+
+				// iterate through through terminals
+				for (k = 0; k < cfg.rules.get(i).rule_term.get(j).size(); k++){
+					System.out.print(" " + cfg.rules.get(i).rule_term.get(j).get(k));
+
+					// remove a terminal from term_temp if it's used
+					for (p = 0; p < term_temp.size(); p++){
+						if (Objects.equals(term_temp.get(p), cfg.rules.get(i).rule_term.get(j).get(k))){
+							term_temp.remove(p);
+						}
+					}
+				}
+				if (j < cfg.rules.get(i).rule_term.size() - 1)
+					System.out.print(" |");
+			}
+			if (i < cfg.rules.size()){
+				System.out.print("\n");
+			}
+		}
+		if (var_temp.size() > 0){
+			for (i = 0; i < var_temp.size(); i++){
+				System.out.print(var_temp.get(i) + " ");
+			}
+		}
+		if (term_temp.size() > 0){
+			System.out.print("\n.. ");
+			for (i = 0; i < term_temp.size(); i++){
+				System.out.print(term_temp.get(i) + " ");
+			}
+			System.out.print("\n");
 		}
 	}
 
