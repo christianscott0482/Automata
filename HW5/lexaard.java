@@ -233,8 +233,23 @@ class lexaard
 							break;
 						case "regex2fsa":
 							break;
+						case "cfgGen":
+							// Evaluate a cfg for an input string
+							// using the method described by theorem
+							// 4.7 in the book
+							break;
 						case "chomskyNF":
+							found_flag = false;
 
+							for (i = 0; i < cfg.size(); i++){
+								if (Objects.equals(cfg.get(i).name, inputsplit[1])){
+									found_flag = true;
+									def_position = i;
+									break;
+								}
+							}
+							if (found_flag)
+								cfg.add(chomsky(cfg.get(def_position)));
 							break;
 
 						case "cfg":
@@ -556,6 +571,27 @@ class lexaard
 		
 	}*/
 	
+	public static grammar chomsky(grammar seeeffgee){
+		// Four steps to converting to chomsky normal form according to 
+		// theorem 2.9 in the book. Step one is create a new start state.	
+		grammar cfg = seeeffgee;
+		// create new rule
+		rule start_state = new rule();
+		// new variable for the rule is S_0
+		start_state.rule_var = "S0";
+		start_state.rule_term.add(new ArrayList<String>());
+		start_state.rule_term.get(0).add(cfg.rules.get(0).rule_var);
+		cfg.rules.add(0, start_state); 
+
+		// Step 2 is to take care of all epsilon rules
+		// aaaaaand it's 4 am...
+		// Step 3 is to handle unit rules
+
+		// Finally, convert remaining rules to proper form
+		
+		return cfg;
+	}
+
 	public static void print_cfg(grammar cfg, int position){
 		
 		// temp lists for terminals and variables with no rules
@@ -759,4 +795,3 @@ class lexaard
 		return;
 	}
 }
-
