@@ -1,0 +1,18 @@
+Author: Christian Auspland
+Homework 5
+
+This homework adds compatibility to use CFGs, specifically with the
+print and define statements. They are used as follows:
+print name // name here is the name of a predefined cfg
+
+define name cfg // where name is the name of a predefined cfg
+//From here three kinds of lines are availabale. First:
+h -> b1 b2 .. bp // rule of variable h with a terminal string on the right
+// NOTE: Variables are assumed to always be one character
+v1 v2 v3 ... vp // A list of variables
+.. t1 t2 ... tp // A list  of terminals
+// NOTE: '..' is the indicator that the list of terminals
+// and not variables
+
+The define loop will run continuously until two consecutive newline
+characters are read and the loop finishes.

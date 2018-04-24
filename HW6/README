@@ -1,0 +1,16 @@
+Author: Christian Auspland
+Homework 6
+
+3 Tasks
+
+1. Add PDA functionality to define and print methods. To call define:
+	define pda_name pda
+define calls the define method. pda_name is the name of the new pda and pda tells the program that you're making a pda as opposed to a dfa or cfg
+
+To Print:
+	print pda_name
+print calls the print method, and prints the state machine in pda_name (hopefully a pda in this case). 
+
+2. Include cfg2pda function.
+
+3. Include pda2cfg function.
