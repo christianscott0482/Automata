@@ -469,6 +469,7 @@ class lexaard
 								// newline character was sent
 								if (input.trim().isEmpty()){
 									loop_flag = false;
+									break;
 								}
 								current_state_name = inputsplit[0];
 								if (!started){
@@ -519,7 +520,7 @@ class lexaard
 											int pair_num = split2.length;
 											for (k = 0; k < (pair_num / 2); k++){
 												pair_loop.next_state = split2[2*k];
-												pair_loop.next_op = split2[2*k+1];
+												pair_loop.next_op = split2[(2*k)+1];
 												myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.add(pair_loop);
 											}
 										
@@ -875,6 +876,8 @@ class lexaard
 		char [] size_buf;
 		int i,j,k;
 		int space_count = 0;
+		String input_index;
+		String stack_index;
 		
 
 		System.out.println("pda");
@@ -882,9 +885,11 @@ class lexaard
 
 		System.out.print("       ");
 		for (i = 0; i < pda.input_alph.size(); i++){
+			input_index = pda.input_alph.get(i);
 			System.out.print(pda.input_alph.get(i));
 			for (k = 0; k < pda.stack_alph.size(); k ++){	
-				for (j = 0; j < pda.myStates.get(0).myGroups.get(i).myTokens.get(j).space_width; j++){
+				stack_index = pda.stack_alph.get(k);
+				for (j = 0; j < pda.myStates.get(0).myGroups.get(input_index).myTokens.get(stack_index).space_width; j++){
 					if ((j == 0) && (i == 0 )){
 						// Do nothing here
 					}	
@@ -899,12 +904,14 @@ class lexaard
 		System.out.print("\n");
 		System.out.print("       ");
 		for (i = 0; i < pda.input_alph.size(); i ++){
+			input_index = pda.input_alph.get(i);
 			for (j = 0; j < pda.stack_alph.size(); j++){
+				stack_index = pda.stack_alph.get(j);
 				space_count = 0;
 				size_buf = pda.stack_alph.get(j).toCharArray();
 				space_count = size_buf.length;
 				System.out.print(pda.stack_alph.get(j));
-				for (k = space_count; k < pda.myStates.get(0).myGroups.get(i).myTokens.get(j).space_width; k++){
+				for (k = space_count; k < pda.myStates.get(0).myGroups.get(input_index).myTokens.get(stack_index).space_width; k++){
 					System.out.print(" ");
 				}
 				System.out.print(" ");
@@ -925,12 +932,15 @@ class lexaard
 			System.out.print(pda.myStates.get(iter).name);
 			System.out.print("    ");
 			for (i = 0; i < pda.input_alph.size(); i++){
+				input_index = pda.input_alph.get(i);
 				space_count = 0;
 				for (j = 0; j < pda.stack_alph.size(); j++){
-					int num_pairs = pda.myStates.get(iter).myGroups.get(i).myTokens.get(j).pairs.size();
+					stack_index = pda.stack_alph.get(j);
+					int num_pairs = pda.myStates.get(iter).myGroups.get(input_index).myTokens.get(stack_index).pairs.size();
+					System.out.print("num_pairs = " + num_pairs);
 					for (k = 0; k < num_pairs; k++)
 					{
-						System.out.print(pda.myStates.get(iter).myGroups.get(i).myTokens.get(j).pairs.get(k));
+						//System.out.print(pda.myStates.get(iter).myGroups.get(input_index).myTokens.get(stack_index).pairs.get(k));
 						if ((k + 1) == num_pairs){
 							// Do nothing
 						} else{
@@ -941,6 +951,7 @@ class lexaard
 				}
 				System.out.print(" ");
 			}
+			System.out.print("\n");
 			iter++;
 		}
 	}
