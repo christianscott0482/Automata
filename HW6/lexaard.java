@@ -108,6 +108,9 @@ class lexaard
 		// Array list of pairs in the token	
 		public List<token_pair> pairs = new ArrayList<token_pair>();
 
+		// A width meant for spacing in printing; starts 2 by default
+		public int space_width = 2;
+
 		// Constructor
 		public token(){
 		
@@ -166,7 +169,11 @@ class lexaard
 		// HashMap of states in the PDA
 		// Key: name of state
 		// Value: State
-		HashMap<String, PDA_state> myStates = new HashMap<String, PDA_state>();
+
+		//HashMap<String, PDA_state> myStates = new HashMap<String, PDA_state>();
+		public List<PDA_state> myStates = new ArrayList<PDA_state>();
+
+		public String start_state;
 
 
 		public PDA(String name_pda)
@@ -234,6 +241,7 @@ class lexaard
 				case "print":
 					found_flag = false;
 					boolean found_cfg = false;
+					boolean found_pda = false;
 
 					// First, search see if the name is a cfg or an automata
 					for (i = 0; i < cfg.size(); i++){
@@ -248,6 +256,21 @@ class lexaard
 					// We found a cfg, so let's print it out
 					if (found_cfg){
 						print_cfg(cfg.get(print_position), print_position);
+						break;
+					}
+
+					// Search to find a PDA
+					for (i = 0; i < myPDAs.size(); i++){
+						if (Objects.equals(myPDAs.get(i).pda_name, inputsplit[1])){
+							found_pda = true;
+							print_position = i;
+							break;
+						}
+					}
+
+					// If we found a PDA, let's print it out
+					if ( found_pda){
+						print_pda(myPDAs.get(print_position));
 						break;
 					}
 					// Seach through all automata identifiers, and set
@@ -424,14 +447,17 @@ class lexaard
 							char [] accept_test;
 							PDA_state loop_state = new PDA_state();
 							String current_state_name;
+							boolean started = false;
 
 							// Inner For Loop stuff
 							token_group tg_loop = new token_group();
 							token token_loop = new token();
 							token_pair pair_loop = new token_pair();
 							String [] split2;
+							char [] width_test;
 							String input_current;
 							String stack_current;
+							int current_state = 0;
 
 
 							// Loop until two consecutive new line characters are read
@@ -445,16 +471,21 @@ class lexaard
 									loop_flag = false;
 								}
 								current_state_name = inputsplit[0];
+								if (!started){
+									myPDAs.get(def_position).start_state = current_state_name;
+									started = true;
+								}
 
 								// Update present state
 								loop_state.name = current_state_name;
 
 								// New element of hashmap
-								myPDAs.get(def_position).myStates.put(current_state_name, loop_state);
+								myPDAs.get(def_position).myStates.add(new PDA_state());
+								current_state = myPDAs.get(def_position).myStates.size() - 1;
 
 								accept_test = inputsplit[0].toCharArray();
 								if (Objects.equals(accept_test[0], '*')){
-									myPDAs.get(def_position).myStates.get(current_state_name).accept = true;
+									myPDAs.get(def_position).myStates.get(current_state).accept = true;
 								}
 
 								// First for loop is the input alphabet
@@ -463,7 +494,7 @@ class lexaard
 									// Adding a new element to the hashmap of groups in the
 									// current state.
 									input_current = myPDAs.get(def_position).input_alph.get(i);
-									myPDAs.get(def_position).myStates.get(current_state_name).myGroups.put(input_current, tg_loop);
+									myPDAs.get(def_position).myStates.get(current_state).myGroups.put(input_current, tg_loop);
 									// Second for loop is the stack alphabet
 									for (j = 0; j < myPDAs.get(def_position).stack_alph.size(); j++){
 
@@ -473,21 +504,23 @@ class lexaard
 										// is going on here.
 										// I'm adding a new element to the hashmap of
 										// tokens in the present group
-										myPDAs.get(def_position).myStates.get(current_state_name).myGroups.get(input_current).myTokens.put(stack_current, token_loop); 
+										myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.put(stack_current, token_loop); 
 										// Split on commas
 										split2 = inputsplit[(3*i)+j+1].split(",");
 
+										width_test=inputsplit[(3*i)+j+1].toCharArray();
+										myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).space_width = width_test.length;
 										if(split2.length == 1){
 											pair_loop.next_state = "0";
 											pair_loop.next_op = "0";
-											myPDAs.get(def_position).myStates.get(current_state_name).myGroups.get(input_current).myTokens.get(stack_current).pairs.add(pair_loop);
+											myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.add(pair_loop);
 										}
 										else{
 											int pair_num = split2.length;
-											for (k = 0; k < pair_num; k++){
+											for (k = 0; k < (pair_num / 2); k++){
 												pair_loop.next_state = split2[2*k];
 												pair_loop.next_op = split2[2*k+1];
-												myPDAs.get(def_position).myStates.get(current_state_name).myGroups.get(input_current).myTokens.get(stack_current).pairs.add(pair_loop);
+												myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.add(pair_loop);
 											}
 										
 										}	
@@ -836,6 +869,80 @@ class lexaard
 		// Finally, convert remaining rules to proper form
 		
 		return cfg;
+	}
+	public static void print_pda(PDA pda)
+	{
+		char [] size_buf;
+		int i,j,k;
+		int space_count = 0;
+		
+
+		System.out.println("pda");
+		System.out.println(pda.pda_name + " " + pda.desc);
+
+		System.out.print("       ");
+		for (i = 0; i < pda.input_alph.size(); i++){
+			System.out.print(pda.input_alph.get(i));
+			for (k = 0; k < pda.stack_alph.size(); k ++){	
+				for (j = 0; j < pda.myStates.get(0).myGroups.get(i).myTokens.get(j).space_width; j++){
+					if ((j == 0) && (i == 0 )){
+						// Do nothing here
+					}	
+					else{
+						System.out.print(" ");
+					}
+				}
+				System.out.print(" ");
+			}
+			System.out.print("  ");
+		}
+		System.out.print("\n");
+		System.out.print("       ");
+		for (i = 0; i < pda.input_alph.size(); i ++){
+			for (j = 0; j < pda.stack_alph.size(); j++){
+				space_count = 0;
+				size_buf = pda.stack_alph.get(j).toCharArray();
+				space_count = size_buf.length;
+				System.out.print(pda.stack_alph.get(j));
+				for (k = space_count; k < pda.myStates.get(0).myGroups.get(i).myTokens.get(j).space_width; k++){
+					System.out.print(" ");
+				}
+				System.out.print(" ");
+			}
+			System.out.print(" ");
+		}
+		System.out.print("\n");
+
+		int iter = 0;
+		while(iter < pda.myStates.size()){
+			if (pda.myStates.get(iter).accept){
+				System.out.print("*");
+			} else{
+				System.out.print(" ");
+			}
+
+
+			System.out.print(pda.myStates.get(iter).name);
+			System.out.print("    ");
+			for (i = 0; i < pda.input_alph.size(); i++){
+				space_count = 0;
+				for (j = 0; j < pda.stack_alph.size(); j++){
+					int num_pairs = pda.myStates.get(iter).myGroups.get(i).myTokens.get(j).pairs.size();
+					for (k = 0; k < num_pairs; k++)
+					{
+						System.out.print(pda.myStates.get(iter).myGroups.get(i).myTokens.get(j).pairs.get(k));
+						if ((k + 1) == num_pairs){
+							// Do nothing
+						} else{
+							System.out.print(",");
+						}
+					}
+					System.out.print(" ");
+				}
+				System.out.print(" ");
+			}
+			iter++;
+		}
 	}
 
 	public static void print_cfg(grammar cfg, int position){
