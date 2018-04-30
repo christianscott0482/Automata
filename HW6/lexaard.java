@@ -97,6 +97,9 @@ class lexaard
 		// String containing next stack operation
 		public String next_op;
 
+		// Empty Flag
+		public boolean empty = false;
+
 		public token_pair(){
 		
 		}
@@ -110,6 +113,9 @@ class lexaard
 
 		// A width meant for spacing in printing; starts 2 by default
 		public int space_width = 2;
+
+		// Number of pairs
+		public int num_pairs = 0;
 
 		// Constructor
 		public token(){
@@ -458,6 +464,7 @@ class lexaard
 							String input_current;
 							String stack_current;
 							int current_state = 0;
+							int current_pair = 0;
 
 
 							// Loop until two consecutive new line characters are read
@@ -484,7 +491,9 @@ class lexaard
 								myPDAs.get(def_position).myStates.add(new PDA_state());
 								current_state = myPDAs.get(def_position).myStates.size() - 1;
 
-								accept_test = inputsplit[0].toCharArray();
+								myPDAs.get(def_position).myStates.get(current_state).name = current_state_name;
+
+								accept_test = current_state_name.toCharArray();
 								if (Objects.equals(accept_test[0], '*')){
 									myPDAs.get(def_position).myStates.get(current_state).accept = true;
 								}
@@ -495,7 +504,8 @@ class lexaard
 									// Adding a new element to the hashmap of groups in the
 									// current state.
 									input_current = myPDAs.get(def_position).input_alph.get(i);
-									myPDAs.get(def_position).myStates.get(current_state).myGroups.put(input_current, tg_loop);
+									myPDAs.get(def_position).myStates.get(current_state).myGroups.put(input_current, new token_group());
+
 									// Second for loop is the stack alphabet
 									for (j = 0; j < myPDAs.get(def_position).stack_alph.size(); j++){
 
@@ -505,23 +515,45 @@ class lexaard
 										// is going on here.
 										// I'm adding a new element to the hashmap of
 										// tokens in the present group
-										myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.put(stack_current, token_loop); 
+										myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.put(stack_current, new token()); 
 										// Split on commas
 										split2 = inputsplit[(3*i)+j+1].split(",");
 
 										width_test=inputsplit[(3*i)+j+1].toCharArray();
 										myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).space_width = width_test.length;
 										if(split2.length == 1){
-											pair_loop.next_state = "0";
-											pair_loop.next_op = "0";
-											myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.add(pair_loop);
+									//		pair_loop.next_state = "0";
+									//		pair_loop.next_op = "0";
+											myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.add(new token_pair());
+											
+											current_pair = myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.size()-1;
+
+											myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.get(current_pair).next_state = "..";
+											
+											myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.get(current_pair).next_op = "..";
+											
+											myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).num_pairs += 1;
+											myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.get(current_pair).empty = true;
+
+
 										}
 										else{
 											int pair_num = split2.length;
 											for (k = 0; k < (pair_num / 2); k++){
-												pair_loop.next_state = split2[2*k];
-												pair_loop.next_op = split2[(2*k)+1];
-												myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.add(pair_loop);
+												//pair_loop.next_state = split2[2*k];
+												//pair_loop.next_op = split2[(2*k)+1];
+												//myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.add(pair_loop);
+
+												myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.add(new token_pair());
+											
+											current_pair = myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.size()-1;
+
+											myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.get(current_pair).next_state = split2[2*k];
+											
+											myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).pairs.get(current_pair).next_op = split2[(2*k)+1];
+											
+											myPDAs.get(def_position).myStates.get(current_state).myGroups.get(input_current).myTokens.get(stack_current).num_pairs += 1;
+
 											}
 										
 										}	
@@ -879,10 +911,13 @@ class lexaard
 		String input_index;
 		String stack_index;
 		
-
+		// Print the type
 		System.out.println("pda");
+
+		// Type the name and description of the PDA
 		System.out.println(pda.pda_name + " " + pda.desc);
 
+		// Print the input alphabet
 		System.out.print("       ");
 		for (i = 0; i < pda.input_alph.size(); i++){
 			input_index = pda.input_alph.get(i);
@@ -902,6 +937,8 @@ class lexaard
 			System.out.print("  ");
 		}
 		System.out.print("\n");
+
+		// Print the Stack Alphabet
 		System.out.print("       ");
 		for (i = 0; i < pda.input_alph.size(); i ++){
 			input_index = pda.input_alph.get(i);
@@ -921,6 +958,8 @@ class lexaard
 		System.out.print("\n");
 
 		int iter = 0;
+		int num_pairs = 0;
+		// Print the states and their data
 		while(iter < pda.myStates.size()){
 			if (pda.myStates.get(iter).accept){
 				System.out.print("*");
@@ -936,15 +975,17 @@ class lexaard
 				space_count = 0;
 				for (j = 0; j < pda.stack_alph.size(); j++){
 					stack_index = pda.stack_alph.get(j);
-					int num_pairs = pda.myStates.get(iter).myGroups.get(input_index).myTokens.get(stack_index).pairs.size();
-					System.out.print("num_pairs = " + num_pairs);
+					num_pairs = pda.myStates.get(iter).myGroups.get(input_index).myTokens.get(stack_index).num_pairs;
 					for (k = 0; k < num_pairs; k++)
 					{
-						//System.out.print(pda.myStates.get(iter).myGroups.get(input_index).myTokens.get(stack_index).pairs.get(k));
-						if ((k + 1) == num_pairs){
-							// Do nothing
-						} else{
+					//	if ((k + 1) == num_pairs){
+						if (pda.myStates.get(iter).myGroups.get(input_index).myTokens.get(stack_index).pairs.get(0).empty){
+							System.out.print("..");	
+						}
+						else{
+							System.out.print(pda.myStates.get(iter).myGroups.get(input_index).myTokens.get(stack_index).pairs.get(k).next_state);
 							System.out.print(",");
+							System.out.print(pda.myStates.get(iter).myGroups.get(input_index).myTokens.get(stack_index).pairs.get(k).next_op);
 						}
 					}
 					System.out.print(" ");
