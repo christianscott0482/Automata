@@ -383,6 +383,137 @@ class lexaard
 							break;
 						case "regex2fsa":
 							break;
+						case "cfg2pda":
+
+							/* There are three "main" states in the new pda we will make from
+							 * the input CFG. q_start, q_loop, and q_accept. All other steps are in'
+							 * the set 'E' which are used to establish the format of the conversion.
+							 * q_accept is the only accepting state. Let's begin. 
+							 */
+							found_flag = false;
+
+							int pda_pos = 0;	// holds position of new pda
+							int state_pos = 0;	// holds position of current state
+							int cfg_pos = 0;	// holds position of the cfg
+							int num_tokens = 0;	// holds the sum of tokens in each state
+							int num_rules = 0;
+							int num_sub_rules = 0;
+							int num_end_rules = 0;
+							
+
+							// Find the refereneced grammar
+							for (i = 0; i < cfg.size(); i++){
+								if (Objects.equals(cfg.get(i).name, inputsplit[3])){
+									found_flag = true;
+									cfg_pos = i;
+									break;
+								}
+							}
+
+							// I'll assume that I won't have to deal with naming issues
+							// Make a new pda
+							myPDAs.add(new PDA(inputsplit[1]));
+							pda_pos = myPDAs.size() - 1;
+							
+							// The input alphabet will be the terminals as well as the
+							// '..' and '$' characters
+							// The terminals will also be in the stack alphabet, so we'll add them
+							// here too.
+							for (i = 0; i < cfg.get(cfg_pos).terminal.size(); i++){
+								myPDAs.get(pda_pos).input_alph.add(cfg.get(cfg_pos).terminal.get(i));
+								myPDAs.get(pda_pos).stack_alph.add(cfg.get(cfg_pos).terminal.get(i));
+							}
+							myPDAs.get(pda_pos).input_alph.add("..");
+							myPDAs.get(pda_pos).input_alph.add("$");
+
+							// Add the variables to the input alphabet
+							for (i = 0; i < cfg.get(cfg_pos).variable.size(); i++){
+								myPDAs.get(pda_pos).input_alph.add(cfg.get(cfg_pos).variable.get(i));
+							}
+
+							// Determine number of tokens in each state
+							// (# of elements in input_alph * # elems in stack_alph)
+							num_tokens = myPDAs.get(pda_pos).input_alph.size() * myPDAs.get(pda_pos).stack_alph.size();	
+
+
+							// Create start state, q_start
+							myPDAs.get(pda_pos).myStates.add(new PDA_state());
+							state_pos = myPDAs.get(pda_pos).myStates.size() - 1;
+							myPDAs.get(pda_pos).myStates.get(state_pos).name = "q_start";
+
+							// Initialize state tokens to '..' values
+
+							String inputS;
+							String stackS;
+							int pair_pos;
+							for (i = 0; i < myPDAs.get(pda_pos).input_alph.size(); i++){
+								inputS = myPDAs.get(pda_pos).input_alph.get(i);
+								myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.put(inputS, new token_group());
+								for (j = 0; j < myPDAs.get(pda_pos).stack_alph.size(); i++){
+									stackS = myPDAs.get(pda_pos).stack_alph.get(j);
+									myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.get(inputS).myTokens.put(stackS, new token());
+									myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.get(inputS).myTokens.get(stackS).pairs.add(new token_pair());
+									pair_pos = myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.get(inputS).myTokens.get(stackS).pairs.size() - 1;
+									myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.get(inputS).myTokens.get(stackS).pairs.get(pair_pos).next_state = "..";
+									myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.get(inputS).myTokens.get(stackS).pairs.get(pair_pos).next_op = "..";
+
+
+								}
+							}
+
+
+							// Create loop state, q_loop
+							myPDAs.get(pda_pos).myStates.add(new PDA_state());
+							state_pos = myPDAs.get(pda_pos).myStates.size() - 1;
+							myPDAs.get(pda_pos).myStates.get(state_pos).name = "q_loop";
+
+							// initialize q_loop
+							for (i = 0; i < myPDAs.get(pda_pos).input_alph.size(); i++){
+								inputS = myPDAs.get(pda_pos).input_alph.get(i);
+								myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.put(inputS, new token_group());
+								for (j = 0; j < myPDAs.get(pda_pos).stack_alph.size(); i++){
+									stackS = myPDAs.get(pda_pos).stack_alph.get(j);
+									myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.get(inputS).myTokens.put(stackS, new token());
+									myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.get(inputS).myTokens.get(stackS).pairs.add(new token_pair());
+									pair_pos = myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.get(inputS).myTokens.get(stackS).pairs.size() - 1;
+									myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.get(inputS).myTokens.get(stackS).pairs.get(pair_pos).next_state = "..";
+									myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.get(inputS).myTokens.get(stackS).pairs.get(pair_pos).next_op = "..";
+
+								}
+							}
+
+							// send q_start to q_loop
+							myPDAs.get(pda_pos).myStates.get(0).myGroups.get("..").myTokens.get("..").pairs.get(0).next_state = "q_loop";
+							myPDAs.get(pda_pos).myStates.get(0).myGroups.get("..").myTokens.get("..").pairs.get(0).next_op = "$";
+							
+							// Now we'll begin the main loop of declaring states based
+							// on the grammar.
+							num_rules = cfg.get(cfg_pos).rules.size();
+
+
+							for (i = 0; i < num_rules; i++){
+								num_sub_rules = cfg.get(cfg_pos).rules.get(num_rules).rule_term.size();
+								for (j = 0; j < num_sub_rules; j++){
+									num_end_rules = cfg.get(cfg_pos).rules.get(num_rules).rule_term.get(num_sub_rules).size();
+									for (k = num_end_rules; k > 1; k--){
+										myPDAs.get(pda_pos).myStates.add(new PDA_state());
+										state_pos = myPDAs.get(pda_pos).myStates.size() - 1;
+										state_init(myPDAs.get(pda_pos), myPDAs.get(pda_pos).myStates.get(state_pos));
+										if (j == 0){
+											myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.get("..").myTokens.get(cfg.get(cfg_pos).rules.get(num_rules).rule_var).pairs.get(0).next_state = "next_to_be_made";
+											myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.get("..").myTokens.get(cfg.get(cfg_pos).rules.get(num_rules).rule_var).pairs.get(0).next_op = cfg.get(cfg_pos).rules.get(num_rules).rule_term.get(num_sub_rules).get(k);
+										} else{
+
+											myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.get("..").myTokens.get(cfg.get(cfg_pos).rules.get(num_rules).rule_var).pairs.get(0).next_state = "next_to_be_made";
+											myPDAs.get(pda_pos).myStates.get(state_pos).myGroups.get("..").myTokens.get(cfg.get(cfg_pos).rules.get(num_rules).rule_var).pairs.get(0).next_op = cfg.get(cfg_pos).rules.get(num_rules).rule_term.get(num_sub_rules).get(k);
+
+										}
+									}
+								}
+							}
+
+
+							break;
 						case "cfgGen":
 							// Evaluate a cfg for an input string
 							// using the method described by theorem
@@ -461,6 +592,7 @@ class lexaard
 							token_pair pair_loop = new token_pair();
 							String [] split2;
 							char [] width_test;
+							StringBuilder sb;
 							String input_current;
 							String stack_current;
 							int current_state = 0;
@@ -484,6 +616,7 @@ class lexaard
 									started = true;
 								}
 
+	
 								// Update present state
 								loop_state.name = current_state_name;
 
@@ -491,11 +624,18 @@ class lexaard
 								myPDAs.get(def_position).myStates.add(new PDA_state());
 								current_state = myPDAs.get(def_position).myStates.size() - 1;
 
-								myPDAs.get(def_position).myStates.get(current_state).name = current_state_name;
+								sb = new StringBuilder(current_state_name);
 
 								accept_test = current_state_name.toCharArray();
 								if (Objects.equals(accept_test[0], '*')){
 									myPDAs.get(def_position).myStates.get(current_state).accept = true;
+									sb.deleteCharAt(0);
+									current_state_name = sb.toString();
+									myPDAs.get(def_position).myStates.get(current_state).name = current_state_name;
+
+								} else{
+								
+								myPDAs.get(def_position).myStates.get(current_state).name = current_state_name;
 								}
 
 								// First for loop is the input alphabet
@@ -844,6 +984,25 @@ class lexaard
 		}
 	}
 
+	public static void state_init(PDA myPDA, PDA_state myState){
+		String inputS;
+		String stackS;
+		int pair_pos = 0;
+		int i,j;
+		for (i = 0; i < myPDA.input_alph.size(); i++){
+			inputS = myPDA.input_alph.get(i);
+			myState.myGroups.put(inputS, new token_group());
+			for (j = 0; j < myPDA.stack_alph.size(); j++){
+				stackS = myPDA.stack_alph.get(j);
+				myState.myGroups.get(inputS).myTokens.put(stackS, new token());
+				myState.myGroups.get(inputS).myTokens.get(stackS).pairs.add(new token_pair());
+				pair_pos = myState.myGroups.get(inputS).myTokens.get(stackS).pairs.size() - 1;
+				myState.myGroups.get(inputS).myTokens.get(stackS).pairs.get(pair_pos).next_state = "..";
+				myState.myGroups.get(inputS).myTokens.get(stackS).pairs.get(pair_pos).next_op = "..";
+
+			}
+		}
+	}
 
 	public static void regex2fsa(lexaard a, String s){
 		int i = 0;

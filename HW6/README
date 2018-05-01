@@ -11,6 +11,33 @@ To Print:
 	print pda_name
 print calls the print method, and prints the state machine in pda_name (hopefully a pda in this case). 
 
-2. Include cfg2pda function.
 
+example use:
+define myPDA pda
+description
+0 1 ..
+0 $ ..
+*q1 .. .. .. .. .. .. .. .. q2,$
+q2 .. .. q2,0 q3,.. .. .. .. .. ..
+q3 .. .. .. q3,.. .. .. .. q4,.. ..  
+*q4 .. .. .. .. .. .. .. .. ..
+
+print m
+
+2. Include cfg2pda function.
+define a cfg with the following format
+define g cfg
+description
+A -> 0 A 1
+A -> B
+B -> #
+
+then call the conversion as
+define m cfg2pda g
+
+finally we can print with
+print m
+
+///////Incomplete///////
 3. Include pda2cfg function.
+///////Incomplete///////
